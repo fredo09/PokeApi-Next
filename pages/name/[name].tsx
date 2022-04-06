@@ -1,18 +1,21 @@
-import React, { useState } from "react";
-import { NextPage, GetStaticProps, GetStaticPaths } from "next";
+import React, { FC, useState } from "react";
+import { GetStaticPaths, GetStaticProps } from "next";
 import { Button, Card, Container, Grid, Image, Text } from "@nextui-org/react";
 import { MainLayout } from "../../layout/MainLayout";
 import { Pokemon } from "../../interfaces/PokemonResponse";
+import { PokemonListResponse } from "../../interfaces/PokemonListResponse";
 import { toogleFavorite, existFavoritePokemon } from "../../utils/storage";
+import pokeApiAxios from "./../../api/PokeApi";
 import { giveDataPokemon } from "./../../utils/dataPokemon";
 import confetti from "canvas-confetti";
-import pokeApi from "../../api/PokeApi";
 
 interface Props {
   pokemon: Pokemon;
 }
 
-const Pokemon: NextPage<Props> = ({ pokemon }) => {
+const PokemonByNamePage: FC<Props> = ({ pokemon }) => {
+  console.log(pokemon);
+
   //State
   const [isFavorite, setFavorite] = useState(existFavoritePokemon(pokemon.id));
 
@@ -142,29 +145,26 @@ const Pokemon: NextPage<Props> = ({ pokemon }) => {
 };
 
 export const getStaticPaths: GetStaticPaths = async (ctx) => {
-  //const { data } = await  // your fetch function here
+  const { data } = await pokeApiAxios.get<PokemonListResponse>(
+    `/pokemon?limit=151`
+  );
 
-  const pokemons151 = [...Array(151)].map((value, idx) => `${idx + 1}`);
+  const pokemonsResults: string[] = data.results.map((pokemon) => pokemon.name);
 
   return {
-    // paths: [
-    //   {
-    //     params: {
-    //       id: '1'
-    //     }
-    //   }
-    // ],
-    paths: pokemons151.map((id) => ({
-      params: { id },
+    paths: pokemonsResults.map((pokemon) => ({
+      params: { name: pokemon },
     })),
     fallback: false,
   };
 };
 
 export const getStaticProps: GetStaticProps = async ({ params }) => {
-  const { id } = params as { id: string };
+  const { name } = params as { name: string };
 
-  const pokemon = await giveDataPokemon(id);
+  const pokemon = await giveDataPokemon(name);
+
+  console.log(pokemon);
 
   return {
     props: {
@@ -173,4 +173,4 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
   };
 };
 
-export default Pokemon;
+export default PokemonByNamePage;
