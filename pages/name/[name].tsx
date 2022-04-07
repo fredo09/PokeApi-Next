@@ -1,5 +1,5 @@
 import React, { FC, useState } from "react";
-import { GetStaticPaths, GetStaticProps } from "next";
+import { GetStaticPaths, GetStaticProps, NextPage } from "next";
 import { Button, Card, Container, Grid, Image, Text } from "@nextui-org/react";
 import { MainLayout } from "../../layout/MainLayout";
 import { Pokemon } from "../../interfaces/PokemonResponse";
@@ -13,7 +13,7 @@ interface Props {
   pokemon: Pokemon;
 }
 
-const PokemonByNamePage: FC<Props> = ({ pokemon }) => {
+const PokemonByNamePage: NextPage<Props> = ({ pokemon }) => {
   console.log(pokemon);
 
   //State
@@ -152,10 +152,11 @@ export const getStaticPaths: GetStaticPaths = async (ctx) => {
   const pokemonsResults: string[] = data.results.map((pokemon) => pokemon.name);
 
   return {
-    paths: pokemonsResults.map((pokemon) => ({
-      params: { name: pokemon },
+    paths: pokemonsResults.map((name) => ({
+      params: { name },
     })),
-    fallback: false,
+    // fallback: false
+    fallback: "blocking",
   };
 };
 
@@ -164,7 +165,15 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
 
   const pokemon = await giveDataPokemon(name);
 
-  console.log(pokemon);
+  //validando si hay pokmeon por nombre
+  if (!pokemon) {
+    return {
+      redirect: {
+        destination: "/",
+        permanent: false,
+      },
+    };
+  }
 
   return {
     props: {
