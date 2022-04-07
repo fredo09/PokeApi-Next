@@ -34,7 +34,7 @@ const CardPokemonItem: FC<PropsCardItem> = ({ pokemon }) => {
   const ruoter = useRouter();
 
   const onClik = () => {
-    ruoter.push(`/pokemon/${pokemon.id}`);
+    ruoter.push(`/name/${name}`);
   };
 
   return (
